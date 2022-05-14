@@ -1,7 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{to_binary, from_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use cw2::set_contract_version;
+use cw_croncat_core::types::RuleResponse;
 
 use crate::error::ContractError;
 use crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -65,15 +66,48 @@ pub fn try_reset(deps: DepsMut, info: MessageInfo, count: i32) -> Result<Respons
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
+        QueryMsg::CheckModulo {} => to_binary(&check_modulo(deps, env)?),
+        QueryMsg::CheckInputModulo { msg } => to_binary(&check_input_modulo(msg)?),
     }
 }
 
 fn query_count(deps: Deps) -> StdResult<CountResponse> {
     let state = STATE.load(deps.storage)?;
     Ok(CountResponse { count: state.count })
+}
+
+// Return TRUE if EVEN, FALSE if ODD
+// RuleResponse is used for additional data passed back
+fn check_modulo(deps: Deps, env: Env) -> StdResult<RuleResponse<Option<Binary>>> {
+    // modulo check if even, block level
+    let b: bool = env.block.height % 2 == 0;
+
+    // If TRUE then return some interesting sample data
+    let data = if b == true {
+        let state = STATE.load(deps.storage)?;
+        Some(to_binary(&CountResponse { count: state.count })?)
+    } else {
+        None
+    };
+
+    Ok((b, data))
+}
+
+// Return TRUE if modulo of count is EVEN
+// msg is a Binary here, to show how interpretting can be done,
+// this example shows binary passed from above "check_modulo"
+// But could be anything or another msg matcher
+// RuleResponse is used for additional data passed back
+fn check_input_modulo(msg: Binary) -> StdResult<RuleResponse<Option<Binary>>> {
+    let msg_value: CountResponse = from_binary(&msg)?;
+
+    // modulo check if even, from the passed in variable
+    let b: bool = msg_value.count % 2 == 0;
+
+    Ok((b, None))
 }
 
 #[cfg(test)]
@@ -98,6 +132,87 @@ mod tests {
         let value: CountResponse = from_binary(&res).unwrap();
         assert_eq!(17, value.count);
     }
+
+    #[test]
+    fn single_modulo_check() {
+        let mut env = mock_env();
+        let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
+
+        let msg = InstantiateMsg { count: 17 };
+        let info = mock_info("creator", &coins(2, "token"));
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        // Check if false
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckModulo {}).unwrap();
+        let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, false);
+
+        env.block.height += 1;
+
+        // Check if true
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckModulo {}).unwrap();
+        let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, true);
+
+        // beneficiary can release it
+        let info = mock_info("anyone", &coins(2, "token"));
+        let msg = ExecuteMsg::Increment {};
+        let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        // should increase counter by 1
+        let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
+        let value: CountResponse = from_binary(&res).unwrap();
+        assert_eq!(18, value.count);
+    }
+
+    #[test]
+    fn multi_modulo_check() {
+        let mut env = mock_env();
+        let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
+
+        let msg = InstantiateMsg { count: 17 };
+        let info = mock_info("creator", &coins(2, "token"));
+        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        // Check if false
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckModulo {}).unwrap();
+        let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, false);
+
+        env.block.height += 1;
+
+        // Check if true
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckModulo {}).unwrap();
+        let (b, d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, true);
+
+        // Check if modulo of previous RES is then false
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckInputModulo { msg: d.clone().unwrap() }).unwrap();
+        let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, false);
+
+        // beneficiary can release it
+        let info = mock_info("anyone", &coins(2, "token"));
+        let msg = ExecuteMsg::Increment {};
+        let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+        // should increase counter by 1
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::GetCount {}).unwrap();
+        let value: CountResponse = from_binary(&res).unwrap();
+        assert_eq!(18, value.count);
+
+        // Check if modulo is true again, because it got incremented
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckModulo {}).unwrap();
+        let (b, dd): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, true);
+
+        // Check if modulo of previous RES is then true
+        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckInputModulo { msg: dd.unwrap() }).unwrap();
+        let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
+        assert_eq!(b, true);
+    }
+
+    // ---- Not interesting tests below ----
 
     #[test]
     fn increment() {

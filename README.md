@@ -10,7 +10,7 @@ Those contracts are made for example purposes only. For more realistic example c
 
 | Title | Description |
 |---|---|
-| [IFTTT Simple](./contracts/ifttt-simple/README.md) | Check if boolean is true, then increment an integer |
+| [IFTTT Simple](./contracts/ifttt-simple) | Check if boolean is true, then increment an integer |
 
 ### Builds
 
