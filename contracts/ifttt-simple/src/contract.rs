@@ -1,6 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, from_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{
+    from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+};
 use cw2::set_contract_version;
 use cw_croncat_core::types::RuleResponse;
 
@@ -86,7 +88,7 @@ fn check_modulo(deps: Deps, env: Env) -> StdResult<RuleResponse<Option<Binary>>>
     let b: bool = env.block.height % 2 == 0;
 
     // If TRUE then return some interesting sample data
-    let data = if b == true {
+    let data = if b {
         let state = STATE.load(deps.storage)?;
         Some(to_binary(&CountResponse { count: state.count })?)
     } else {
@@ -187,7 +189,14 @@ mod tests {
         assert_eq!(b, true);
 
         // Check if modulo of previous RES is then false
-        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckInputModulo { msg: d.clone().unwrap() }).unwrap();
+        let res = query(
+            deps.as_ref(),
+            env.clone(),
+            QueryMsg::CheckInputModulo {
+                msg: d.clone().unwrap(),
+            },
+        )
+        .unwrap();
         let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
         assert_eq!(b, false);
 
@@ -207,7 +216,12 @@ mod tests {
         assert_eq!(b, true);
 
         // Check if modulo of previous RES is then true
-        let res = query(deps.as_ref(), env.clone(), QueryMsg::CheckInputModulo { msg: dd.unwrap() }).unwrap();
+        let res = query(
+            deps.as_ref(),
+            env.clone(),
+            QueryMsg::CheckInputModulo { msg: dd.unwrap() },
+        )
+        .unwrap();
         let (b, _d): RuleResponse<Option<Binary>> = from_binary(&res).unwrap();
         assert_eq!(b, true);
     }
