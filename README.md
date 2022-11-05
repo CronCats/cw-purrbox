@@ -11,6 +11,7 @@ Those contracts are made for example purposes only. For more realistic example c
 | Title | Description |
 |---|---|
 | [IFTTT Simple](./contracts/ifttt-simple) | Check if boolean is true, then increment an integer |
+| [DCA JunoSwap](./contracts/dca) | Configure pools you want to dollar cost average swap |
 
 ### Builds
 
