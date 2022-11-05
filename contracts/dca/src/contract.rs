@@ -1,14 +1,18 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, Deps, DepsMut, Env, Order, MessageInfo, Reply, Response, StdResult, StdError, SubMsg, WasmMsg,
+    coin, coins, to_binary, Addr, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Order, Reply,
+    Response, StdError, StdResult, SubMsg, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use cw_croncat_core::types::RuleResponse;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, Basket, JunoswapExecuteMsg, JunoswapQueryMsg, Token1ForToken2PriceResponse};
-use crate::state::{State, STATE, BASKETS};
+use crate::msg::{
+    Basket, ExecuteMsg, InstantiateMsg, JunoswapExecuteMsg, JunoswapQueryMsg, QueryMsg,
+    Token1ForToken2PriceResponse,
+};
+use crate::state::{State, BASKETS, STATE};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "cw-purrbox:dca-junoswap";
@@ -21,7 +25,7 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let state = State {
         callers: vec![info.sender.clone()],
@@ -43,15 +47,12 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
-// TODO: REPLY
-// Update the executed timestamp (& balance?!)
-fn dca_swap_by_id_reply(deps: DepsMut, msg: Reply) -> StdResult<Response> {
-    // let msg_unbinary: String = from_binary(&msg.result.unwrap())?;
+fn dca_swap_by_id_reply(_deps: DepsMut, _msg: Reply) -> StdResult<Response> {
+    // let msg_unbinary: String = from_binary(&msg.result.unwrap().data.unwrap())?;
     // // let msg_parsed: Value = serde_json::from_str(msg_unbinary);
     // let msg_parse = serde_json::from_str(msg_unbinary.as_str());
 
-    // Save res.contract_address
-    Ok(Response::new())
+    Ok(Response::new().add_attribute("method", "dca_swap_by_id_reply"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -71,8 +72,14 @@ pub fn execute(
     }
 }
 
-pub fn dca_swap_by_id(deps: DepsMut, env: Env, info: MessageInfo, id: String) -> Result<Response, ContractError> {
-    let b = BASKETS.may_load(deps.storage, id)?;
+pub fn dca_swap_by_id(
+    deps: DepsMut,
+    env: Env,
+    _info: MessageInfo,
+    id: String,
+) -> Result<Response, ContractError> {
+    // TODO: Add "caller" check
+    let b = BASKETS.may_load(deps.storage, id.clone())?;
     if b.is_none() {
         return Err(ContractError::CustomError {
             val: "Basket doesnt exist".to_string(),
@@ -81,33 +88,77 @@ pub fn dca_swap_by_id(deps: DepsMut, env: Env, info: MessageInfo, id: String) ->
     let basket = b.unwrap();
 
     // Panic if the swap is happening too soon (_env)
-    if basket.last_interval + basket.min_interval > env.block.height {
+    if basket
+        .clone()
+        .last_interval
+        .saturating_add(basket.clone().min_interval)
+        > env.block.height
+    {
         return Err(ContractError::CustomError {
             val: "Too soon try later".to_string(),
         });
     }
 
+    // If balance is too low need to FWD funds to recipient then end
+    let bal_amt: u128 = basket.clone().balance.amount.into();
+    let swap_amt: u128 = basket.clone().swap_amount.into();
+    let bal_denom = basket.clone().balance.denom;
+    let state = STATE.load(deps.storage)?;
+
+    if swap_amt > bal_amt {
+        let refund_addr: Addr = if let Some(recipient) = basket.clone().recipient {
+            recipient
+        } else {
+            state.owner
+        };
+
+        let bank_send = BankMsg::Send {
+            to_address: refund_addr.to_string(),
+            amount: coins(basket.clone().balance.amount.into(), bal_denom),
+        };
+
+        return Ok(Response::new()
+            .add_attribute("method", "dca_swap_by_id")
+            .add_attribute("type", "end_refund_basket")
+            .add_message(bank_send));
+    }
+
+    // Update balance
+    BASKETS.update(deps.storage, id, |old| match old {
+        Some(_) => {
+            let mut o = old.unwrap();
+            let chg_amt = bal_amt.saturating_sub(swap_amt);
+            o.balance = coin(chg_amt, basket.clone().balance.denom);
+            o.last_interval = env.block.height;
+
+            Ok(o)
+        }
+        None => Err(ContractError::CustomError {
+            val: "Basket doesnt exist".to_string(),
+        }),
+    })?;
+
     // Query the swap rate
     let valid_contract = deps.api.addr_validate(&basket.swap_address.to_string())?;
     let price_res: Token1ForToken2PriceResponse = deps.querier.query_wasm_smart(
-        valid_contract,
+        valid_contract.clone(),
         &JunoswapQueryMsg::Token1ForToken2Price {
-            token1_amount: basket.swap_amount
+            token1_amount: Uint128::from(swap_amt),
         },
     )?;
 
-    let swap = if let Some(recipient) = basket.recipient {
+    let swap = if let Some(recipient) = basket.clone().recipient {
         JunoswapExecuteMsg::SwapAndSendTo {
-            input_token: basket.input_token,
-            input_amount: basket.swap_amount,
+            input_token: basket.clone().input_token,
+            input_amount: Uint128::from(swap_amt),
             min_token: price_res.token2_amount,
             recipient: recipient.to_string(),
             expiration: None,
         }
     } else {
         JunoswapExecuteMsg::Swap {
-            input_token: basket.input_token,
-            input_amount: basket.swap_amount,
+            input_token: basket.clone().input_token,
+            input_amount: Uint128::from(swap_amt),
             min_output: price_res.token2_amount,
             expiration: None,
         }
@@ -115,43 +166,58 @@ pub fn dca_swap_by_id(deps: DepsMut, env: Env, info: MessageInfo, id: String) ->
 
     // Execute the swap via submsg
     let swap_msg = WasmMsg::Execute {
-        contract_addr: basket.swap_address.to_string(),
+        contract_addr: valid_contract.to_string(),
         msg: to_binary(&swap)?,
-        funds: vec![]
+        funds: coins(swap_amt, bal_denom),
     };
-    let submsg = SubMsg::reply_on_success(swap_msg.into(), DCA_SWAP_REPLY_ID);
+    let submsg = SubMsg::reply_on_success(swap_msg, DCA_SWAP_REPLY_ID);
 
     Ok(Response::new()
         .add_attribute("method", "dca_swap_by_id")
         .add_submessage(submsg))
 }
 
-pub fn add_basket(deps: DepsMut, info: MessageInfo, id: String, basket: Basket) -> Result<Response, ContractError> {
+pub fn add_basket(
+    deps: DepsMut,
+    info: MessageInfo,
+    id: String,
+    basket: Basket,
+) -> Result<Response, ContractError> {
     let state = STATE.load(deps.storage)?;
     if info.sender != state.owner {
         return Err(ContractError::Unauthorized {});
     }
-    BASKETS.update(deps.storage, id, |old| match old {
+    BASKETS.update(deps.storage, id.clone(), |old| match old {
         Some(_) => Err(ContractError::CustomError {
             val: "Task already exists".to_string(),
         }),
         None => Ok(basket),
     })?;
-    Ok(Response::new().add_attribute("method", "add_basket")
+    Ok(Response::new()
+        .add_attribute("method", "add_basket")
         .add_attribute("basket_id", id))
 }
 
-pub fn remove_basket(deps: DepsMut, info: MessageInfo, id: String) -> Result<Response, ContractError> {
+pub fn remove_basket(
+    deps: DepsMut,
+    info: MessageInfo,
+    id: String,
+) -> Result<Response, ContractError> {
     let state = STATE.load(deps.storage)?;
     if info.sender != state.owner {
         return Err(ContractError::Unauthorized {});
     }
-    BASKETS.remove(deps.storage, id);
-    Ok(Response::new().add_attribute("method", "remove_basket")
+    BASKETS.remove(deps.storage, id.clone());
+    Ok(Response::new()
+        .add_attribute("method", "remove_basket")
         .add_attribute("basket_id", id))
 }
 
-pub fn add_caller(deps: DepsMut, info: MessageInfo, caller: Addr) -> Result<Response, ContractError> {
+pub fn add_caller(
+    deps: DepsMut,
+    info: MessageInfo,
+    caller: Addr,
+) -> Result<Response, ContractError> {
     let mut state = STATE.load(deps.storage)?;
     if info.sender != state.owner {
         return Err(ContractError::Unauthorized {});
@@ -161,8 +227,12 @@ pub fn add_caller(deps: DepsMut, info: MessageInfo, caller: Addr) -> Result<Resp
     Ok(Response::new().add_attribute("method", "add_caller"))
 }
 
-pub fn remove_caller(deps: DepsMut, info: MessageInfo, caller: Addr) -> Result<Response, ContractError> {
-    let mut state = STATE.load(deps.storage)?;
+pub fn remove_caller(
+    deps: DepsMut,
+    info: MessageInfo,
+    caller: Addr,
+) -> Result<Response, ContractError> {
+    let state = STATE.load(deps.storage)?;
     if info.sender != state.owner {
         return Err(ContractError::Unauthorized {});
     }
@@ -179,17 +249,22 @@ pub fn remove_caller(deps: DepsMut, info: MessageInfo, caller: Addr) -> Result<R
     Ok(Response::new().add_attribute("method", "remove_caller"))
 }
 
-pub fn change_owner(deps: DepsMut, info: MessageInfo, owner_id: Addr) -> Result<Response, ContractError> {
+pub fn change_owner(
+    deps: DepsMut,
+    info: MessageInfo,
+    owner_id: Addr,
+) -> Result<Response, ContractError> {
     let state = STATE.load(deps.storage)?;
     if info.sender != state.owner {
         return Err(ContractError::Unauthorized {});
     }
-    Ok(Response::new().add_attribute("method", "change_owner")
+    Ok(Response::new()
+        .add_attribute("method", "change_owner")
         .add_attribute("owner", owner_id.to_string()))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::HasSwapById { id } => to_binary(&query_has_swap_by_id(deps, id)?),
         QueryMsg::CanSwapById { id } => to_binary(&query_can_swap_by_id(deps, id)?),
@@ -200,12 +275,12 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 /// TODO: Implements a method to check if a threshold is met, returning if a swap should be made
-fn query_has_swap_by_id(deps: Deps, id: String) -> StdResult<RuleResponse<Option<String>>> {
+fn query_has_swap_by_id(_deps: Deps, _id: String) -> StdResult<RuleResponse<Option<String>>> {
     Ok((false, None))
 }
 
 /// TODO: Implements a method to check if the swap is actually ready, so no failed TXNs
-fn query_can_swap_by_id(deps: Deps, id: String) -> StdResult<RuleResponse<Option<String>>> {
+fn query_can_swap_by_id(_deps: Deps, _id: String) -> StdResult<RuleResponse<Option<String>>> {
     Ok((false, None))
 }
 
@@ -217,7 +292,9 @@ fn query_get_basket_by_id(deps: Deps, id: String) -> StdResult<Basket> {
 
 /// Returns basket ids
 fn query_get_basket_ids(deps: Deps) -> StdResult<Vec<String>> {
-    let baskets = BASKETS.keys(deps.storage, None, None, Order::Ascending).collect::<StdResult<Vec<_>>>()?;
+    let baskets = BASKETS
+        .keys(deps.storage, None, None, Order::Ascending)
+        .collect::<StdResult<Vec<_>>>()?;
     Ok(baskets)
 }
 

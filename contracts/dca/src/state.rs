@@ -1,9 +1,9 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::msg::Basket;
 use cosmwasm_std::Addr;
 use cw_storage_plus::{Item, Map};
-use crate::msg::Basket;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {

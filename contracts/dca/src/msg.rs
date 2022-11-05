@@ -1,7 +1,7 @@
+use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cw20::{Denom, Expiration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Addr, Coin, BlockInfo::height, Decimal, Uint128};
-use cw20::{Denom, Expiration};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -39,15 +39,14 @@ pub struct Basket {
     // how many blocks must have passed before can execute again
     pub min_interval: u64,
     // keep track of last execution, so we don't execute ALLATONCE
-    pub last_interval: height,
+    pub last_interval: u64,
     // TODO: Add optional ratio threshold for swap by "arb"
 }
-
 
 /// JunoSwap Types
 /// -------------------------------------
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, JsonSchema)]
 pub enum TokenSelect {
     Token1,
     Token2,
