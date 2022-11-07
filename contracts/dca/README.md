@@ -35,10 +35,9 @@ Instantiate
 
 ```
 # Configure minimum balance (if using GTE based swaps)
-{
-  "min_balance": { "amount": "", "denom": "" }
-}
+{}
 ```
+
 ```
 # Query
 {
@@ -128,7 +127,7 @@ BASE64_TRANSFER=$(echo '{ "dca_swap_by_id": { "id": "JUNO-CRAB" } }' | base64)
                 "wasm": {
                     "execute": {
                         "contract_addr": "YOUR_DCA_CONTRACT_ADDR",
-                        "msg": "eyAiZGNhX3N3YXBfYnlfaWQiOiB7ICJpZCI6ICJKVU5PLUNSQUIiIH0gfQ==",
+                        "msg": "eyAiZGNhX3N3YXBfYnlfaWQiOiB7ICJpZCI6ICJKVU5PLUNSQUIiIH0gfQo=",
                         "funds": []
                     }
                 }
@@ -137,6 +136,36 @@ BASE64_TRANSFER=$(echo '{ "dca_swap_by_id": { "id": "JUNO-CRAB" } }' | base64)
         }
       ],
       "rules": []
+    }
+  }
+}
+```
+
+----
+
+### DCA by Market, Using swap rate
+
+
+Add Basket with swap rate. 
+Finish the flow above, since all that  is needed for the
+
+```
+# Exec
+{
+  "add_basket": {
+    "id": "JUNO-CRAB",
+    "basket": {
+      "balance": {
+        "amount": "1000000",
+        "denom": "ujunox"
+      },
+      "swap_amount": "100000",
+      "swap_address": "juno1j4ezvp80mnn75hlngak35n6wwzemxqjxdncdxc5n9dfw6s0q080qyhh9zl",
+      "recipient": "YOUR_RECIPIENT",
+      "input_token": "Token1",
+      "min_interval": 15,
+      "last_interval": 10,
+      "min_swap_rate": "50"
     }
   }
 }

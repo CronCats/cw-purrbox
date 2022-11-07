@@ -140,18 +140,20 @@ pub fn dca_swap_by_id(
     )?;
 
     // swap rate checks (IF specified)
-    if let Some(last_swap) = basket.last_swap {
-        // For now, we're really only going 1 direction, so use second value
-        let ready = validate_swap_threshold(
-            price_res.token2_amount,
-            last_swap[1],
-            basket.min_swap_rate.unwrap_or_default(),
-        );
+    if basket.min_swap_rate.is_some() {
+        if let Some(last_swap) = basket.last_swap {
+            // For now, we're really only going 1 direction, so use second value
+            let ready = validate_swap_threshold(
+                price_res.token2_amount,
+                last_swap[1],
+                basket.min_swap_rate.unwrap_or_default(),
+            );
 
-        if !ready {
-            return Err(ContractError::CustomError {
-                val: "Swap rate out of bounds".to_string(),
-            });
+            if !ready {
+                return Err(ContractError::CustomError {
+                    val: "Swap rate out of bounds".to_string(),
+                });
+            }
         }
     }
 
