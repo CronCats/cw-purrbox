@@ -17,6 +17,14 @@ Core workflow is as follows:
 
 Notice there are also some helper/query msgs below, if you want to check status of things along the way. Happy DCAing!
 
+### Improvements:
+
+This example shows direct paths, but could be refactored to be more UX friendly. 
+
+1. Baskets dynamically use the main balance, instead of basket balance only. (Considered this, but boundaries were too open-ended)
+2. Swap rate variance, allowing for better upper & lower swap rates
+3. AuthZ!
+
 ### Caution! Example Code Only
 
 All of the code within this example should be taken for example sake, not ready for production or redistribution.
@@ -26,8 +34,10 @@ All of the code within this example should be taken for example sake, not ready 
 Instantiate
 
 ```
-# lol - literally nothing to do here ;)
-{}
+# Configure minimum balance (if using GTE based swaps)
+{
+  "min_balance": { "amount": "", "denom": "" }
+}
 ```
 ```
 # Query
