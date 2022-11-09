@@ -11,7 +11,8 @@ pub struct InstantiateMsg {}
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     DcaSwapById { id: String },
-    AddBasket { id: String, basket: Basket },
+    AddBasket { id: String, basket: Box<Basket> },
+    RefillBasket { id: String },
     RemoveBasket { id: String },
     AddCaller { caller: Addr },
     RemoveCaller { caller: Addr },
@@ -37,10 +38,12 @@ pub struct Basket {
     pub recipient: Option<Addr>,
     pub input_token: TokenSelect,
     // how many blocks must have passed before can execute again
-    pub min_interval: u64,
+    pub min_interval: Option<u64>,
     // keep track of last execution, so we don't execute ALLATONCE
-    pub last_interval: u64,
-    // TODO: Add optional ratio threshold for swap by "arb"
+    pub last_interval: Option<u64>,
+    // Add optional percentage for swap by "arb"
+    pub min_swap_rate: Option<Uint128>,
+    pub last_swap: Option<[Uint128; 2]>,
 }
 
 /// JunoSwap Types

@@ -17,6 +17,14 @@ Core workflow is as follows:
 
 Notice there are also some helper/query msgs below, if you want to check status of things along the way. Happy DCAing!
 
+### Improvements:
+
+This example shows direct paths, but could be refactored to be more UX friendly. 
+
+1. Baskets dynamically use the main balance, instead of basket balance only. (Considered this, but boundaries were too open-ended)
+2. Swap rate variance, allowing for better upper & lower swap rates
+3. AuthZ!
+
 ### Caution! Example Code Only
 
 All of the code within this example should be taken for example sake, not ready for production or redistribution.
@@ -26,9 +34,10 @@ All of the code within this example should be taken for example sake, not ready 
 Instantiate
 
 ```
-# lol - literally nothing to do here ;)
+# Configure minimum balance (if using GTE based swaps)
 {}
 ```
+
 ```
 # Query
 {
@@ -118,7 +127,7 @@ BASE64_TRANSFER=$(echo '{ "dca_swap_by_id": { "id": "JUNO-CRAB" } }' | base64)
                 "wasm": {
                     "execute": {
                         "contract_addr": "YOUR_DCA_CONTRACT_ADDR",
-                        "msg": "eyAiZGNhX3N3YXBfYnlfaWQiOiB7ICJpZCI6ICJKVU5PLUNSQUIiIH0gfQ==",
+                        "msg": "eyAiZGNhX3N3YXBfYnlfaWQiOiB7ICJpZCI6ICJKVU5PLUNSQUIiIH0gfQo=",
                         "funds": []
                     }
                 }
@@ -127,6 +136,36 @@ BASE64_TRANSFER=$(echo '{ "dca_swap_by_id": { "id": "JUNO-CRAB" } }' | base64)
         }
       ],
       "rules": []
+    }
+  }
+}
+```
+
+----
+
+### DCA by Market, Using swap rate
+
+
+Add Basket with swap rate. 
+Finish the flow above, since all that  is needed for the
+
+```
+# Exec
+{
+  "add_basket": {
+    "id": "JUNO-CRAB",
+    "basket": {
+      "balance": {
+        "amount": "1000000",
+        "denom": "ujunox"
+      },
+      "swap_amount": "100000",
+      "swap_address": "juno1j4ezvp80mnn75hlngak35n6wwzemxqjxdncdxc5n9dfw6s0q080qyhh9zl",
+      "recipient": "YOUR_RECIPIENT",
+      "input_token": "Token1",
+      "min_interval": 15,
+      "last_interval": 10,
+      "min_swap_rate": "50"
     }
   }
 }
