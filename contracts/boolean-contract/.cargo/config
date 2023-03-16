@@ -1,0 +1,9 @@
+[alias]
+wasm = "build --release --lib --target wasm32-unknown-unknown"
+wasm-debug = "build --target wasm32-unknown-unknown"
+pretty = "fmt --all"
+# These call scripts in Cargo.toml, see [package.metadata.scripts]
+unit-test = "run-script unit-test"
+schema = "run-script schema"
+optimize-m1 = "run-script optimize-m1"
+optimize = "run-script optimize"
