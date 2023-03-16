@@ -1,0 +1,65 @@
+[package]
+name = "cw-boolean-contract"
+description = "Simple CosmWasm contract that stores and returns a boolean"
+license = "MIT OR Apache-2.0"
+authors = ["Mike Purvis @mikedotexe"]
+version = "0.1.3"
+edition = "2021"
+readme = "README.md"
+repository = "https://github.com/mikedotexe/cw-boolean-contract"
+keywords = ["cosmwasm", "smart-contracts", "interchain", "cosmos", "blockchain"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# This does not bloat contract size, it's only for creating the JSON schema
+[[bin]]
+name = "make-schema"
+path = "schema-maker/schema.rs"
+
+[dependencies]
+cosmwasm-std = "1.1.8"
+cosmwasm-schema = "1.1.8"
+cw2 = "0.16.0"
+schemars = "0.8.11"
+# Cannot seem to upgrade to 1.0.0 version
+# Tracking this issue: https://github.com/CosmWasm/cw-storage-plus/issues/19
+cw-storage-plus = "0.16.0"
+thiserror = { version = "1.0.37" }
+mod-sdk = "0.1.0"
+
+[dev-dependencies]
+# no dev dependencies yet, but consider cw-multi-test
+
+# Make sure you've run: "cargo install cargo-run-script"
+# Then you can run the scripts below, like: "cargo run-script optimize"
+[package.metadata.scripts]
+optimize-m1 = """docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer-arm64:0.12.8
+"""
+optimize = """docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.8
+"""
+schema = "cargo +nightly run --bin make-schema"
+unit-test = "cargo +nightly test --lib"
+
+[features]
+# for more explicit tests, cargo test --features=backtraces
+backtraces = ["cosmwasm-std/backtraces"]
+# use library feature to disable all instantiate/execute/query exports
+library = []
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'abort'
+incremental = false
+overflow-checks = true

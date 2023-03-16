@@ -1,0 +1,1 @@
+ed25e85f68658d8954a292dca78f6c4ab80a7a8577a450bb0734dc779436c7e1  ./target/wasm32-unknown-unknown/release/boolean_contract_caller.wasm
