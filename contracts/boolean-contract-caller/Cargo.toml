@@ -3,10 +3,9 @@ name = "boolean-contract-caller"
 description = "Simple CosmWasm contract that calls boolean-contract, toggling a boolean set in state"
 license = "MIT OR Apache-2.0"
 authors = ["Mike Purvis @mikedotexe"]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 readme = "README.md"
-repository = "https://github.com/mikedotexe/cw-boolean-contract-caller"
 keywords = ["cosmwasm", "smart-contracts", "interchain", "cosmos", "juno", "blockchain"]
 
 [lib]
@@ -18,17 +17,16 @@ name = "make-schema"
 path = "schema-maker/schema.rs"
 
 [dependencies]
+croncat-sdk-tasks = "0.1.4"
+croncat-sdk-factory = "0.1.4"
+croncat-mod-generic = { version = "0.1.4", features = ["library"] }
 cosmwasm-std = "1.1.8"
 cosmwasm-schema = "1.1.9"
-cw2 = "0.16.0"
-croncat-sdk-tasks = "0.1.2"
-croncat-sdk-factory = "0.1.2"
-cw20 = { version = "0.16.0" }
-croncat-mod-generic = { version = "0.1.2", features = ["library"] }
+cw2 = "1.0.1"
+cw20 = { version = "1.0.1" }
 schemars = "0.8.11"
-# Cannot seem to upgrade to 1.0.0 version
-# Tracking this issue: https://github.com/CosmWasm/cw-storage-plus/issues/19
-#cw-storage-plus = "0.16.0"
+cw-storage-plus = "1.0.1"
+serde_json = "1.0.94"
 thiserror = { version = "1.0.37" }
 
 [dev-dependencies]
