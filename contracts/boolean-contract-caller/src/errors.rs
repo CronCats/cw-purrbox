@@ -1,10 +1,10 @@
-use cosmwasm_std::StdError;
+use cosmwasm_std::{StdError, Uint64};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ContractError {
-    #[error("ERR_REPLY_ERROR|{code}|{msg}")]
-    ReplyError { code: u64, msg: String },
+    #[error("ERR_REPLY_ERROR|{reply_id}|{msg}")]
+    ReplyError { reply_id: Uint64, msg: String },
 
     #[error("{0}")]
     Std(#[from] StdError),
@@ -15,6 +15,6 @@ pub enum ContractError {
     #[error("{code:?}|{msg:?}")]
     CustomError { code: String, msg: String },
 
-    #[error("ERR_UNKNOWN_REPLY|Unknown reply ID: {id:?}")]
-    UnknownReplyID { id: u64 },
+    #[error("ERR_UNKNOWN_REPLY|Unknown reply ID: {reply_id:?}")]
+    UnknownReplyID { reply_id: Uint64 },
 }

@@ -1,11 +1,13 @@
-mod make_croncat_toggle_task;
+pub mod demo_latest_contract;
+pub mod demo_latest_contracts;
+pub mod make_croncat_toggle_task;
 
 use crate::errors::ContractError;
 use crate::msgs::execute_msg::ExecuteMsg;
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
     env: Env,
@@ -13,6 +15,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::MakeCroncatToggleTask { } => make_croncat_toggle_task::execute(deps, env, info),
+        ExecuteMsg::MakeCroncatToggleTask {} => make_croncat_toggle_task::execute(deps, env, info),
+        ExecuteMsg::DemoLatestContracts {} => demo_latest_contracts::execute(deps, env, info),
+        ExecuteMsg::DemoLatestContract { contract_name } => {
+            demo_latest_contract::execute(deps, env, info, contract_name)
+        }
     }
 }
