@@ -29,11 +29,11 @@ Brew some tea, it'll take a sec.
 
 Deploy (Juno testnet):
 
-    junod tx wasm store artifacts/boolean_contract_caller.wasm --node https://rpc.uni.junonetwork.io:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
+    junod tx wasm store artifacts/boolean_contract_caller.wasm --node https://uni-rpc.reece.sh:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
 
 Take the `code_id`, replace the 904 below with it:
 
-    junod tx wasm instantiate 904 '{"croncat_factory_address":"juno1w89cg4y6ta7enkeh3zzpha9c2say0k3dp83ygm27fyattx6v7r9qfyy384","boolean_address":"juno1u54ndscjm8887h97sk8punnwfutg2auu759efc5568l6zt70selqfe3jc9"}' --label "cw-boolean-contract-caller" --no-admin --node https://rpc.uni.junonetwork.io:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
+    junod tx wasm instantiate 904 '{"croncat_factory_address":"juno1qzkcegjce9ezy5afs043r8kdf50lkugcgdxqgp4a902mayefssws5n5ydu","boolean_address":"juno1u54ndscjm8887h97sk8punnwfutg2auu759efc5568l6zt70selqfe3jc9"}' --label "cw-boolean-contract-caller" --no-admin --node https://uni-rpc.reece.sh:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
 
 This will return the contract address. Let's call each method…
 
@@ -41,15 +41,15 @@ This will return the contract address. Let's call each method…
 
 Calling this method will sign and send an execute message to our new contract. It asks the Factory contract for the latest Task contract address. Then the contract uses [CosmWasm submessages](https://book.cosmwasm.com/actor-model/contract-as-actor.html?highlight=submess#sending-submessages) (also known as cross-contract calls) to create a CronCat task that will execute an action every block. The action? Call the `toggle` method on a boolean contract.   
 
-    junod tx wasm execute juno16z8qpkemf38lykq7avt9crul4gy8u4xf0mhjlwa8fc0ydwv36t9snxnzqh '{"make_croncat_toggle_task":{}}' --node https://rpc.uni.junonetwork.io:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --amount 1000000ujunox --from MY_ACCOUNT_HERE
+    junod tx wasm execute juno16z8qpkemf38lykq7avt9crul4gy8u4xf0mhjlwa8fc0ydwv36t9snxnzqh '{"make_croncat_toggle_task":{}}' --node https://uni-rpc.reece.sh:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --amount 1000000ujunox --from MY_ACCOUNT_HERE
 
 ### `demo_latest_contracts` (plural)
 
-    junod tx wasm execute juno1kpswxja2c6g4ku9asg0ptkmajkmy3dt55nflamzkt6tcp4epf09qcs90sk '{"demo_latest_contracts":{}}' --node https://rpc.uni.junonetwork.io:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
+    junod tx wasm execute juno1kpswxja2c6g4ku9asg0ptkmajkmy3dt55nflamzkt6tcp4epf09qcs90sk '{"demo_latest_contracts":{}}' --node https://uni-rpc.reece.sh:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
 
 ### `demo_latest_contract` (singular)
 
-    junod tx wasm execute juno1kpswxja2c6g4ku9asg0ptkmajkmy3dt55nflamzkt6tcp4epf09qcs90sk '{"demo_latest_contract":{"contract_name":"tasks"}}' --node https://rpc.uni.junonetwork.io:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
+    junod tx wasm execute juno1kpswxja2c6g4ku9asg0ptkmajkmy3dt55nflamzkt6tcp4epf09qcs90sk '{"demo_latest_contract":{"contract_name":"tasks"}}' --node https://uni-rpc.reece.sh:443 --chain-id uni-6 --gas-prices 0.025ujunox --gas auto --gas-adjustment 1.3 -b block -o json -y --from MY_ACCOUNT_HERE
 
 **Note**: be sure to check the [CronCat documentation](https://docs.cron.cat) for the latest version of the Factory contract.
 
