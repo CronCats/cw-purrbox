@@ -1,5 +1,5 @@
 {
-  "contract_name": "boolean-contract",
+  "contract_name": "boolean-contract-caller",
   "contract_version": "0.1.0",
   "idl_version": "1.0.0",
   "instantiate": {
@@ -7,10 +7,14 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
-      "log"
+      "boolean_address",
+      "croncat_factory_address"
     ],
     "properties": {
-      "log": {
+      "boolean_address": {
+        "type": "string"
+      },
+      "croncat_factory_address": {
         "type": "string"
       }
     },
@@ -23,19 +27,11 @@
       {
         "type": "object",
         "required": [
-          "set_value"
+          "make_croncat_toggle_task"
         ],
         "properties": {
-          "set_value": {
+          "make_croncat_toggle_task": {
             "type": "object",
-            "required": [
-              "is_true"
-            ],
-            "properties": {
-              "is_true": {
-                "type": "boolean"
-              }
-            },
             "additionalProperties": false
           }
         },
@@ -44,30 +40,32 @@
       {
         "type": "object",
         "required": [
-          "toggle"
+          "demo_latest_contracts"
         ],
         "properties": {
-          "toggle": {
+          "demo_latest_contracts": {
             "type": "object",
             "additionalProperties": false
           }
         },
         "additionalProperties": false
-      }
-    ]
-  },
-  "query": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "QueryMsg",
-    "oneOf": [
+      },
       {
         "type": "object",
         "required": [
-          "get_value"
+          "demo_latest_contract"
         ],
         "properties": {
-          "get_value": {
+          "demo_latest_contract": {
             "type": "object",
+            "required": [
+              "contract_name"
+            ],
+            "properties": {
+              "contract_name": {
+                "type": "string"
+              }
+            },
             "additionalProperties": false
           }
         },
@@ -75,13 +73,8 @@
       }
     ]
   },
+  "query": null,
   "migrate": null,
   "sudo": null,
-  "responses": {
-    "get_value": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Boolean",
-      "type": "boolean"
-    }
-  }
+  "responses": null
 }
