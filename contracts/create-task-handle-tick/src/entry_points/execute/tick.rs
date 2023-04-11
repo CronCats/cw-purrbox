@@ -2,13 +2,10 @@ use std::vec;
 use crate::errors::ContractError;
 use crate::state::{CRONCAT_FACTORY_ADDRESS, MOCK_AUCTIONS};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Binary, DepsMut, Env, from_slice, MessageInfo, QueryRequest, Response, StdError, StdResult, to_binary, Uint64, WasmQuery};
-use croncat_sdk_factory::msg::EntryResponse;
-use croncat_sdk_factory::state::CONTRACT_ADDRS;
+use cosmwasm_std::{Addr, Binary, DepsMut, Env, MessageInfo, Response, Uint64};
 use croncat_sdk_manager::types::LAST_TASK_EXECUTION_INFO_KEY;
 use croncat_sdk_tasks::types::TaskExecutionInfo;
-use cosmwasm_storage::{to_length_prefixed, to_length_prefixed_nested};
-use croncat_sdk_factory::msg::Config;
+use cosmwasm_storage::to_length_prefixed_nested;
 
 #[cw_serde]
 pub enum NewManagerMethods {
@@ -32,7 +29,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
     // This method will clean out old auctions (or whatever you want)
 
     // Ask CronCat Factory if the sender is indeed a version of the Manager contract
-    // TODO: need to add a query method on factory that takes a contract address and tells you if it's one of ours
 
     let croncat_factory_address = CRONCAT_FACTORY_ADDRESS.load(deps.storage)?;
 

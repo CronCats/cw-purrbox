@@ -5,18 +5,13 @@ use croncat_sdk_tasks::types::TaskExecutionInfo;
 use cw_utils::parse_reply_execute_data;
 
 pub fn reply(_deps: DepsMut, msg: Reply) -> Result<Response, ContractError> {
-    // shouldn't happen because we used reply_on_success
-    // if let Err(err) = msg.clone().result.into_result() {
-    //     Err(ContractError::ReplyError {
-    //         code: REPLY_CRONCAT_TASK_CREATION,
-    //         msg: format!("{:?}", err.clone()),
-    //     })
-    // } else {
-    //     Err(ContractError::CustomError {
-    //         code: "I_DUNNO_BRO".to_string(),
-    //         msg: "This is a custom error that happens when a reply is received for an error but it's not an error or something".to_string(),
-    //     })
-    // }
+    if let Err(err) = msg.clone().result.into_result() {
+        return Err(ContractError::ReplyError {
+            reply_id: REPLY_CRONCAT_TASK_CREATION.into(),
+            msg: format!("{:?}", err.clone()),
+        });
+    }
+
     if let Err(err) = msg.clone().result.into_result() {
         return Err(ContractError::ReplyError {
             reply_id: Uint64::from(REPLY_CRONCAT_TASK_CREATION),
