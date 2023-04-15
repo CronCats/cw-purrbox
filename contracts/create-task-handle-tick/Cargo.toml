@@ -17,31 +17,38 @@ name = "make-schema"
 path = "schema-maker/schema.rs"
 
 [dependencies]
-cosmwasm-std = "1.2.3"
+cosmwasm-std = "1.1.9"
 cosmwasm-schema = "1.1.9"
 cw2 = "1.0.1"
-croncat-sdk-tasks = "0.1.4"
-croncat-sdk-factory = "0.1.4"
-croncat-sdk-manager = "0.1.4"
+croncat-sdk-tasks = "0.1.5"
+croncat-sdk-factory = "0.1.5"
+croncat-sdk-manager = "0.1.5"
 cw20 = { version = "1.0.1" }
-croncat-mod-generic = { version = "0.1.4", features = ["library"] }
+croncat-mod-generic = { version = "0.1.5", features = ["library"] }
 schemars = "0.8.11"
 cw-storage-plus = "1.0.1"
 serde_json = "1.0.94"
 serde-json-wasm = "0.5.0"
 cw-utils = "1.0.1"
 thiserror = { version = "1.0.37" }
-cosmwasm-storage = "1.2.3"
+croncat-integration-utils = "0.1.5"
+#croncat-integration-utils = { path = "../../../cw-croncat/integration-sdk/croncat-integration-utils" }
+croncat-errors-macro = "0.1.5"
+#croncat-errors-macro = { path = "../../../cw-croncat/integration-sdk/croncat-errors-macro"}
+anyhow = "1"
 
 [dev-dependencies]
+croncat-integration-utils = "0.1.5"
+#croncat-integration-testing = { path = "../../../cw-croncat/integration-sdk/croncat-integration-testing" }
 cw-multi-test = "0.16.2"
-croncat-agents = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.4" }
-croncat-tasks = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.4" }
-croncat-manager = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.4" }
-croncat-factory = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.4" }
-croncat-sdk-factory = "0.1.4"
-croncat-sdk-manager = "0.1.4"
-croncat-sdk-agents = "0.1.4"
+croncat-agents = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.5" }
+croncat-tasks = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.5" }
+croncat-manager = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.5" }
+croncat-factory = { git = "https://github.com/CronCats/cw-croncat.git", branch = "beta-0.1.5" }
+croncat-sdk-factory = "0.1.5"
+croncat-sdk-manager = "0.1.5"
+croncat-sdk-agents = "0.1.5"
+croncat-sdk-core = "0.1.5"
 
 # Make sure you've run: "cargo install cargo-run-script"
 # Then you can run the scripts below, like: "cargo run-script optimize"

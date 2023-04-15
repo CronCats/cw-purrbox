@@ -4,12 +4,16 @@ use crate::state::CRONCAT_FACTORY_ADDRESS;
 use crate::REPLY_CRONCAT_TASK_CREATION;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response, SubMsg, CosmosMsg};
+use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, SubMsg};
 use croncat_sdk_factory::msg::ContractMetadataResponse;
 use croncat_sdk_factory::msg::FactoryQueryMsg::LatestContract;
 use croncat_sdk_tasks::msg::TasksExecuteMsg::CreateTask;
 use croncat_sdk_tasks::types::{Action, Interval, TaskRequest};
 
+/// Create a CronCat task using cross-contract calls (submessages)
+/// Take a look in `reply_croncat_task` to see how we gather
+/// information on the newly-created task, including whether
+/// it was successful or not.
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     // To create a CronCat task you will need to provide funds. All funds sent
     // to this method will be used for task creation

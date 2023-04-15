@@ -1,17 +1,19 @@
 use crate::msgs::execute_msg::ExecuteMsg::Tick;
-use crate::tests::test_helpers::{set_up_croncat_contracts, CronCatTestEnv, add_seconds_to_block, increment_block_height};
-use crate::tests::{contracts, ALICE, BOB, DENOM, VERSION, AGENT};
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{coins, from_binary, to_binary, Addr, BankMsg};
-use croncat_manager::msg::ExecuteMsg::ProxyCall;
+use cosmwasm_std::{coins, from_binary, to_binary, Addr, BankMsg, coin, TransactionInfo};
+use croncat_integration_testing::{AGENT, ALICE, BOB, DENOM, VERSION};
+use croncat_integration_testing::test_helpers::{add_seconds_to_block, CronCatTestEnv, increment_block_height, set_up_croncat_contracts};
+// use croncat_integration_testing::test_helpers::test_helpers::{add_seconds_to_block, CronCatTestEnv, increment_block_height, set_up_croncat_contracts};
 use croncat_sdk_agents::msg::ExecuteMsg::RegisterAgent;
-use croncat_sdk_tasks::types::{
-    Action, Boundary, BoundaryHeight, Interval, Task, TaskExecutionInfo, TaskRequest,
-};
+use croncat_sdk_core::types::GasPrice;
+use croncat_sdk_manager::msg::ManagerExecuteMsg::ProxyCall;
+use croncat_sdk_tasks::types::{Action, AmountForOneTask, Boundary, BoundaryHeight, Interval, Task, TaskExecutionInfo, TaskRequest};
 use cw_multi_test::Executor;
+use crate::errors::ContractError;
 use crate::msgs::query_msg::QueryMsg::Auctions;
 use crate::state::Auction;
+use crate::tests::contracts;
 
 /// This test demonstrates how you might set up tests
 /// that include CronCat in your dApp's workflow
@@ -61,11 +63,37 @@ fn task_creation_directly() {
 
     let task_info: TaskExecutionInfo = from_binary(&create_task_res.data.unwrap()).unwrap();
 
+    let expected_task_info = TaskExecutionInfo {
+        block_height: app.block_info().height,
+        tx_info: Some(TransactionInfo {
+            index: 0,
+        }),
+        task_hash: "atom:1e5e835598b0c3cc0a8c583611f826c1a1fcb442034683466b11ac6fe29".to_string(),
+        owner_addr: Addr::unchecked(ALICE),
+        amount_for_one_task: AmountForOneTask {
+            cw20: None,
+            coin: [Some(coin(10, DENOM)), None],
+            gas: 400000,
+            agent_fee: 5,
+            treasury_fee: 5,
+            gas_price: GasPrice {
+                numerator: 4,
+                denominator: 100,
+                gas_adjustment_numerator: 150,
+            },
+        },
+        version: "0.1".to_string(),
+    };
+
+    assert_eq!(task_info, expected_task_info);
+
+    // Now, for demonstration purposes, we'll make this human-readable and print it
+    let task_info_json = serde_json::to_string_pretty(&task_info).expect("Could not turn task info into JSON");
     // remember, to see this you gotta:
     // cargo test -- --nocapture
     println!(
-        "Directly call CronCat Tasks contract\ntask_info: {:?}",
-        task_info
+        "Directly call CronCat Tasks contract\n---\ntask_info: {}\n---",
+        task_info_json
     );
 }
 
@@ -159,7 +187,7 @@ fn task_creation_from_caller() {
         app.block_info().height,
         "Differing block heights"
     );
-    // Ideally we'd like to check the transaction index as well, but it seems that cw-multi-test hardcodes this to 0, so we'll ignore in tests.
+    // Ideally we'd like to check the transaction index as well, but cw-multi-test uses 0 for now.
 }
 
 #[test]
@@ -175,17 +203,17 @@ fn tick_directly() {
     // Deploy this example contract
     let code_id = app.store_code(contracts::create_task_handle_tick());
     let example_address = app
-      .instantiate_contract(
-          code_id,
-          Addr::unchecked(ALICE),
-          &crate::msgs::instantiate_msg::InstantiateMsg {
-              croncat_factory_address: factory.to_string(),
-          },
-          &[],
-          "create task handle tick 🤙",
-          None,
-      )
-      .unwrap();
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked(ALICE),
+            &crate::msgs::instantiate_msg::InstantiateMsg {
+                croncat_factory_address: factory.to_string(),
+            },
+            &[],
+            "create task handle tick 🤙",
+            None,
+        )
+        .unwrap();
 
     let create_tick_res = app.execute_contract(
         Addr::unchecked(ALICE),
@@ -197,7 +225,20 @@ fn tick_directly() {
     // We expect this to fail because `tick` enforces that it must:
     // - be called by a known CronCat manager
     // - be at the same block height and transaction index
-    assert!(create_tick_res.is_ok());
+    // - be coming from a task from a known owner
+    let result_error: ContractError = create_tick_res.unwrap_err()
+      .downcast()
+      .unwrap();
+
+    let expected_error = ContractError::CronCatError {
+        // We'll show the full path here, demonstrating
+        // this is from the utilities, all wrapped up.
+        err: croncat_integration_utils::error::CronCatContractError::LatestTaskInfoFailed {
+            manager_addr: Addr::unchecked(ALICE),
+        },
+    };
+
+    assert_eq!(result_error, expected_error);
 }
 
 #[test]
@@ -213,17 +254,17 @@ fn create_task_proxy_call() {
     // Deploy this example contract
     let code_id = app.store_code(contracts::create_task_handle_tick());
     let example_address = app
-      .instantiate_contract(
-          code_id,
-          Addr::unchecked(ALICE),
-          &crate::msgs::instantiate_msg::InstantiateMsg {
-              croncat_factory_address: factory.to_string(),
-          },
-          &[],
-          "create task handle tick 🤙",
-          None,
-      )
-      .unwrap();
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked(ALICE),
+            &crate::msgs::instantiate_msg::InstantiateMsg {
+                croncat_factory_address: factory.to_string(),
+            },
+            &[],
+            "create task handle tick 🤙",
+            None,
+        )
+        .unwrap();
 
     let create_task_handle_tick_res = app.execute_contract(
         Addr::unchecked(ALICE),
@@ -235,15 +276,23 @@ fn create_task_proxy_call() {
     assert!(create_task_handle_tick_res.is_ok());
 
     // Register an agent who will execute the task
-    let agent_registration_res = app.execute_contract(Addr::unchecked(AGENT), agents, &RegisterAgent {
-        payable_account_id: None,
-    }, &[]);
+    let agent_registration_res = app.execute_contract(
+        Addr::unchecked(AGENT),
+        agents,
+        &RegisterAgent {
+            payable_account_id: None,
+        },
+        &[],
+    );
 
     assert!(agent_registration_res.is_ok());
 
     // Before executing the CronCat task, let's check how many
     // auctions are in our example
-    let mut mock_auctions: Vec<Auction> = app.wrap().query_wasm_smart(example_address.clone(), &Auctions {}).expect("Did not retrieve mock auctions properly");
+    let mut mock_auctions: Vec<Auction> = app
+        .wrap()
+        .query_wasm_smart(example_address.clone(), &Auctions {})
+        .expect("Did not retrieve mock auctions properly");
 
     // Before the agent calls CronCat, fulfilling the task, we have three auctions
     assert_eq!(mock_auctions.len(), 3usize);
@@ -252,13 +301,21 @@ fn create_task_proxy_call() {
     app.update_block(|block| increment_block_height(block, Some(2)));
 
     // Run proxy_call from the agent
-    let proxy_call_res = app.execute_contract(Addr::unchecked(AGENT), manager, &ProxyCall { task_hash: None }, &[]);
+    let proxy_call_res = app.execute_contract(
+        Addr::unchecked(AGENT),
+        manager,
+        &ProxyCall { task_hash: None },
+        &[],
+    );
 
     assert!(proxy_call_res.is_ok());
 
     // Check that one auction has been removed due to logic
     // inside the tick method
-    mock_auctions = app.wrap().query_wasm_smart(example_address, &Auctions {}).expect("Did not retrieve mock auctions properly");
+    mock_auctions = app
+        .wrap()
+        .query_wasm_smart(example_address, &Auctions {})
+        .expect("Did not retrieve mock auctions properly");
 
     // We fast-forwarded 10 seconds, meaning one auction expired, leaving two
     assert_eq!(mock_auctions.len(), 2usize);
