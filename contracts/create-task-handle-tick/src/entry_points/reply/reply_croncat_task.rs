@@ -1,7 +1,9 @@
 use crate::errors::ContractError;
 use cosmwasm_std::{DepsMut, Reply, Response};
+use croncat_integration_utils::reply_handler::{
+    reply_complete_task_creation, reply_handle_task_creation,
+};
 use croncat_integration_utils::CronCatTaskExecutionInfo;
-use croncat_integration_utils::reply_handler::{reply_complete_task_creation, reply_handle_task_creation};
 
 pub fn reply(_deps: DepsMut, msg: Reply) -> Result<Response, ContractError> {
     // Pass the reply message into a CronCat integration helper

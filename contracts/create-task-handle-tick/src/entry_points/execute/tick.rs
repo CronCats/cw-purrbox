@@ -33,16 +33,15 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
 
     // Call a CronCat integration helper function
     // We're not reading the variable below for this example, but you could.
-    let _task_info =
-        croncat_integration_utils::handle_incoming_task::handle_incoming_task(
-            &deps.querier,
-            env.clone(),
-            info,
-            // Remember we load this from our contract's state.
-            &croncat_factory_addr,
-            // We could use extra_params here, but this also means default.
-            None,
-        )?;
+    let _task_info = croncat_integration_utils::handle_incoming_task::handle_incoming_task(
+        &deps.querier,
+        env.clone(),
+        info,
+        // Remember we load this from our contract's state.
+        &croncat_factory_addr,
+        // We could use extra_params here, but this also means default.
+        None,
+    )?;
 
     // We've validated that this invocation is from a known CronCat task.
 

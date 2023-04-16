@@ -1,19 +1,23 @@
-use crate::msgs::execute_msg::ExecuteMsg::Tick;
-use cosmwasm_std::CosmosMsg::Wasm;
-use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{coins, from_binary, to_binary, Addr, BankMsg, coin, TransactionInfo};
-use croncat_integration_testing::{AGENT, ALICE, BOB, DENOM, VERSION};
-use croncat_integration_testing::test_helpers::{add_seconds_to_block, CronCatTestEnv, increment_block_height, set_up_croncat_contracts};
-// use croncat_integration_testing::test_helpers::test_helpers::{add_seconds_to_block, CronCatTestEnv, increment_block_height, set_up_croncat_contracts};
-use croncat_sdk_agents::msg::ExecuteMsg::RegisterAgent;
-use croncat_sdk_core::types::GasPrice;
-use croncat_sdk_manager::msg::ManagerExecuteMsg::ProxyCall;
-use croncat_sdk_tasks::types::{Action, AmountForOneTask, Boundary, BoundaryHeight, Interval, Task, TaskExecutionInfo, TaskRequest};
-use cw_multi_test::Executor;
 use crate::errors::ContractError;
+use crate::msgs::execute_msg::ExecuteMsg::Tick;
 use crate::msgs::query_msg::QueryMsg::Auctions;
 use crate::state::Auction;
 use crate::tests::contracts;
+use cosmwasm_std::CosmosMsg::Wasm;
+use cosmwasm_std::WasmMsg::Execute;
+use cosmwasm_std::{coin, coins, from_binary, to_binary, Addr, BankMsg, TransactionInfo};
+use croncat_integration_testing::test_helpers::{
+    add_seconds_to_block, increment_block_height, set_up_croncat_contracts, CronCatTestEnv,
+};
+use croncat_integration_testing::{AGENT, ALICE, BOB, DENOM, VERSION};
+use croncat_sdk_agents::msg::ExecuteMsg::RegisterAgent;
+use croncat_sdk_core::types::GasPrice;
+use croncat_sdk_manager::msg::ManagerExecuteMsg::ProxyCall;
+use croncat_sdk_tasks::types::{
+    Action, AmountForOneTask, Boundary, BoundaryHeight, Interval, Task, TaskExecutionInfo,
+    TaskRequest,
+};
+use cw_multi_test::Executor;
 
 /// This test demonstrates how you might set up tests
 /// that include CronCat in your dApp's workflow
@@ -65,9 +69,7 @@ fn task_creation_directly() {
 
     let expected_task_info = TaskExecutionInfo {
         block_height: app.block_info().height,
-        tx_info: Some(TransactionInfo {
-            index: 0,
-        }),
+        tx_info: Some(TransactionInfo { index: 0 }),
         task_hash: "atom:1e5e835598b0c3cc0a8c583611f826c1a1fcb442034683466b11ac6fe29".to_string(),
         owner_addr: Addr::unchecked(ALICE),
         amount_for_one_task: AmountForOneTask {
@@ -88,7 +90,8 @@ fn task_creation_directly() {
     assert_eq!(task_info, expected_task_info);
 
     // Now, for demonstration purposes, we'll make this human-readable and print it
-    let task_info_json = serde_json::to_string_pretty(&task_info).expect("Could not turn task info into JSON");
+    let task_info_json =
+        serde_json::to_string_pretty(&task_info).expect("Could not turn task info into JSON");
     // remember, to see this you gotta:
     // cargo test -- --nocapture
     println!(
@@ -226,9 +229,7 @@ fn tick_directly() {
     // - be called by a known CronCat manager
     // - be at the same block height and transaction index
     // - be coming from a task from a known owner
-    let result_error: ContractError = create_tick_res.unwrap_err()
-      .downcast()
-      .unwrap();
+    let result_error: ContractError = create_tick_res.unwrap_err().downcast().unwrap();
 
     let expected_error = ContractError::CronCatError {
         // We'll show the full path here, demonstrating

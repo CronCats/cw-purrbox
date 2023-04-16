@@ -4,7 +4,7 @@ use crate::state::CRONCAT_FACTORY_ADDRESS;
 use crate::REPLY_CRONCAT_TASK_CREATION;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response, SubMsg, CosmosMsg};
+use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response, SubMsg};
 use croncat_sdk_factory::msg::ContractMetadataResponse;
 use croncat_sdk_factory::msg::FactoryQueryMsg::LatestContract;
 use croncat_sdk_tasks::msg::TasksExecuteMsg::CreateTask;
@@ -28,8 +28,8 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
         contract_name: tasks_name.clone(),
     };
     let latest_contract_res: ContractMetadataResponse = deps
-      .querier
-      .query_wasm_smart(&croncat_factory_address, &query_factory_msg)?;
+        .querier
+        .query_wasm_smart(&croncat_factory_address, &query_factory_msg)?;
 
     // Check validity of result
     if latest_contract_res.metadata.is_none() {
@@ -73,6 +73,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
     let sub_message = SubMsg::reply_always(create_task_msg, REPLY_CRONCAT_TASK_CREATION);
 
     Ok(Response::new()
-      .add_attribute("action", "make_croncat_tick_task")
-      .add_submessage(sub_message))
+        .add_attribute("action", "make_croncat_tick_task")
+        .add_submessage(sub_message))
 }
