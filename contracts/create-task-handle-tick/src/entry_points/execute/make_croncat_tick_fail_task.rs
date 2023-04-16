@@ -63,7 +63,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
     };
 
     let create_task_msg = Wasm(Execute {
-        contract_addr: String::from(tasks_address.clone()),
+        contract_addr: String::from(tasks_address),
         msg: to_binary(&CreateTask {
             task: Box::new(croncat_task),
         })?,
