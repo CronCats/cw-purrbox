@@ -6,7 +6,10 @@ use crate::tests::contracts;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
 use cosmwasm_std::{coin, coins, from_binary, to_binary, Addr, BankMsg, TransactionInfo};
-use croncat_integration_testing::test_helpers::{add_seconds_to_block, increment_block_height, set_up_croncat_contracts, CronCatTestEnv, default_app};
+use croncat_integration_testing::test_helpers::{
+    add_seconds_to_block, default_app, increment_block_height, set_up_croncat_contracts,
+    CronCatTestEnv,
+};
 use croncat_integration_testing::{AGENT, ALICE, BOB, DENOM, VERSION};
 use croncat_sdk_agents::msg::ExecuteMsg::RegisterAgent;
 use croncat_sdk_core::types::GasPrice;

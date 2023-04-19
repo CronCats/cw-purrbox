@@ -3,13 +3,9 @@ use crate::msgs::execute_msg::ExecuteMsg;
 use crate::state::CRONCAT_FACTORY_ADDRESS;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response, SubMsg};
-use croncat_integration_utils::{CronCatAction, CronCatInterval, CronCatTaskRequest, REPLY_CRONCAT_TASK_CREATION};
+use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response};
 use croncat_integration_utils::task_creation::create_croncat_task_submessage;
-use croncat_sdk_factory::msg::ContractMetadataResponse;
-use croncat_sdk_factory::msg::FactoryQueryMsg::LatestContract;
-use croncat_sdk_tasks::msg::TasksExecuteMsg::CreateTask;
-use croncat_sdk_tasks::types::{Action, Interval, TaskRequest};
+use croncat_integration_utils::{CronCatAction, CronCatInterval, CronCatTaskRequest};
 
 /// This method intentionally fails because it doesn't
 /// attach funds to pay the agent and so on.

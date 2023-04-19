@@ -3,10 +3,9 @@ use crate::msgs::execute_msg::ExecuteMsg;
 use crate::state::CRONCAT_FACTORY_ADDRESS;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
-use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response, CosmosMsg, WasmQuery};
+use cosmwasm_std::{to_binary, DepsMut, Env, MessageInfo, Response};
 use croncat_integration_utils::task_creation::create_croncat_task_submessage;
-use croncat_integration_utils::{CronCatAction, CronCatBoundary, CronCatBoundaryHeight, CronCatCosmosQuery, CronCatInterval, CronCatTaskRequest, CroncatQuery, CronCatBoundaryTime, CronCatTransform, CronCatPathToValue, CronCatValueIndex};
-use croncat_sdk_tasks::types::{Boundary, BoundaryHeight, CosmosQuery};
+use croncat_integration_utils::{CronCatAction, CronCatInterval, CronCatTaskRequest};
 
 /// Create a CronCat task using cross-contract calls (submessages)
 /// Take a look in `reply_croncat_task` to see how we gather
