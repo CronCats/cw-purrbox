@@ -16,6 +16,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
 
     // We can optionally change a few parameters to suit our needs.
     // Structure from crate croncat-integration-utils
+    // CRONCAT HELPER
     let _extra_params = croncat_integration_utils::types::HandleIncomingTaskParams {
         // Whether to check if this transaction is in the same block
         // and transaction index as the last CronCat manager task sent.
@@ -33,12 +34,13 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
 
     // Call a CronCat integration helper function
     // We're not reading the variable below for this example, but you could.
+    // CRONCAT HELPER
     let _task_info = croncat_integration_utils::handle_incoming_task::handle_incoming_task(
         &deps.querier,
         env.clone(),
         info,
         // Remember we load this from our contract's state.
-        &croncat_factory_addr,
+        croncat_factory_addr,
         // We could use extra_params here, but this also means default.
         None,
     )?;
@@ -49,7 +51,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, C
 
     // Now our tick function performs its objectives.
     // In our case, we'll remove old auctions.
-
     let mut auctions = MOCK_AUCTIONS.load(deps.storage)?;
     // Keep the auctions whose time is in the future
     auctions.retain(|auction| auction.end_time > env.block.time);

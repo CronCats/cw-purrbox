@@ -6,9 +6,7 @@ use crate::tests::contracts;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
 use cosmwasm_std::{coin, coins, from_binary, to_binary, Addr, BankMsg, TransactionInfo};
-use croncat_integration_testing::test_helpers::{
-    add_seconds_to_block, increment_block_height, set_up_croncat_contracts, CronCatTestEnv,
-};
+use croncat_integration_testing::test_helpers::{add_seconds_to_block, increment_block_height, set_up_croncat_contracts, CronCatTestEnv, default_app};
 use croncat_integration_testing::{AGENT, ALICE, BOB, DENOM, VERSION};
 use croncat_sdk_agents::msg::ExecuteMsg::RegisterAgent;
 use croncat_sdk_core::types::GasPrice;
@@ -29,7 +27,7 @@ fn task_creation_directly() {
         manager: _,
         tasks,
         agents: _,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Create a task
     let action = Action {
@@ -108,7 +106,7 @@ fn task_creation_from_caller() {
         manager: _,
         tasks,
         agents: _,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Deploy this example contract
     let code_id = app.store_code(contracts::create_task_handle_tick());
@@ -134,13 +132,13 @@ fn task_creation_from_caller() {
 
     assert!(create_task_handle_tick_res.is_ok());
 
-    let toggle_task_binary_data = create_task_handle_tick_res
-        .unwrap()
-        .data
-        .expect("Could not get the data response");
+    let create_task_handle_tick = create_task_handle_tick_res.unwrap();
 
-    let created_task_info: TaskExecutionInfo =
-        serde_json::from_slice(toggle_task_binary_data.0.as_slice()).unwrap();
+    let task_info_binary = create_task_handle_tick
+        .data
+        .expect("Should be able to extract data from task creation");
+    let task_info_slice = task_info_binary.0.as_slice();
+    let created_task_info: TaskExecutionInfo = serde_json::from_slice(task_info_slice).unwrap();
 
     // Determine expected task hash by querying `task_hash`
     // Basically we feed task details to a query and can get the
@@ -201,7 +199,7 @@ fn tick_directly() {
         manager: _,
         tasks: _,
         agents: _,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Deploy this example contract
     let code_id = app.store_code(contracts::create_task_handle_tick());
@@ -234,6 +232,7 @@ fn tick_directly() {
     let expected_error = ContractError::CronCatError {
         // We'll show the full path here, demonstrating
         // this is from the utilities, all wrapped up.
+        // CRONCAT HELPER
         err: croncat_integration_utils::error::CronCatContractError::LatestTaskInfoFailed {
             manager_addr: Addr::unchecked(ALICE),
         },
@@ -250,7 +249,7 @@ fn create_task_proxy_call() {
         manager,
         tasks: _,
         agents,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Deploy this example contract
     let code_id = app.store_code(contracts::create_task_handle_tick());

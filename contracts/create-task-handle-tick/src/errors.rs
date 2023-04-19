@@ -3,6 +3,8 @@ use croncat_errors_macro::croncat_error;
 use thiserror::Error;
 
 // CRONCAT HELPER
+// Note: you'll want to place this macro above the derive.
+// It'll throw a helper error if you forget.
 #[croncat_error]
 #[derive(Error, Debug, PartialEq)]
 pub enum ContractError {
