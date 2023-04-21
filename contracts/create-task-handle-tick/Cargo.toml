@@ -1,0 +1,78 @@
+[package]
+name = "create-task-handle-tick"
+description = "CosmWasm contract demonstating CronCat task creation, testing, and validating an invocation comes from a known task."
+license = "MIT OR Apache-2.0"
+authors = ["Mike Purvis @mikedotexe"]
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+keywords = ["cosmwasm", "smart-contracts", "interchain", "cosmos", "blockchain"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# This does not bloat contract size, it's only for creating the JSON schema
+[[bin]]
+name = "make-schema"
+path = "schema-maker/schema.rs"
+
+[dependencies]
+cosmwasm-std = "1.1.9"
+cosmwasm-schema = "1.1.9"
+cw2 = "1.0.1"
+croncat-sdk-tasks = "0.1.5"
+croncat-sdk-factory = "0.1.5"
+cw20 = { version = "1.0.1" }
+croncat-mod-generic = { version = "0.1.5", features = ["library"] }
+schemars = "0.8.11"
+cw-storage-plus = "1.0.1"
+thiserror = { version = "1.0.37" }
+# HERE
+croncat-integration-utils = "0.1.5"
+#croncat-integration-utils = { path = "../../../cw-croncat/integration-sdk/croncat-integration-utils" }
+# HERE
+croncat-errors-macro = "0.1.5"
+#croncat-errors-macro = { path = "../../../cw-croncat/integration-sdk/croncat-errors-macro"}
+
+[dev-dependencies]
+# HERE
+croncat-integration-testing = "0.1.5"
+#croncat-integration-testing = { path = "../../../cw-croncat/integration-sdk/croncat-integration-testing" }
+serde_json = "1.0.94"
+cw-multi-test = "0.16.2"
+croncat-sdk-manager = "0.1.5"
+croncat-sdk-agents = "0.1.5"
+croncat-sdk-core = "0.1.5"
+
+# Make sure you've run: "cargo install cargo-run-script"
+# Then you can run the scripts below, like: "cargo run-script optimize"
+[package.metadata.scripts]
+optimize-m1 = """docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer-arm64:0.12.13
+"""
+optimize = """docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.13
+"""
+schema = "cargo +nightly run --bin make-schema"
+unit-test = "cargo +nightly test --lib"
+
+[features]
+# for more explicit tests, cargo test --features=backtraces
+backtraces = ["cosmwasm-std/backtraces"]
+# use library feature to disable all instantiate/execute/query exports
+library = []
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'abort'
+incremental = false
+overflow-checks = true
