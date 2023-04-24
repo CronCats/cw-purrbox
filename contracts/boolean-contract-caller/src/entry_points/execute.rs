@@ -1,5 +1,3 @@
-pub mod demo_latest_contract;
-pub mod demo_latest_contracts;
 pub mod make_croncat_toggle_task;
 
 use crate::errors::ContractError;
@@ -16,9 +14,5 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::MakeCroncatToggleTask {} => make_croncat_toggle_task::execute(deps, env, info),
-        ExecuteMsg::DemoLatestContracts {} => demo_latest_contracts::execute(deps, env, info),
-        ExecuteMsg::DemoLatestContract { contract_name } => {
-            demo_latest_contract::execute(deps, env, info, contract_name)
-        }
     }
 }
