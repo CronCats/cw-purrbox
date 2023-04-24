@@ -8,6 +8,6 @@ use croncat_integration_utils::REPLY_CRONCAT_TASK_CREATION;
 pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractError> {
     match msg.id {
         REPLY_CRONCAT_TASK_CREATION => reply_croncat_task::reply(deps, msg),
-        id => Err(ContractError::UnknownReplyID { id }),
+        id => Err(ContractError::UnknownReplyID { id: id.into() }),
     }
 }
