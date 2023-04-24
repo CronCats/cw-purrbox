@@ -36,40 +36,6 @@
           }
         },
         "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "demo_latest_contracts"
-        ],
-        "properties": {
-          "demo_latest_contracts": {
-            "type": "object",
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "demo_latest_contract"
-        ],
-        "properties": {
-          "demo_latest_contract": {
-            "type": "object",
-            "required": [
-              "contract_name"
-            ],
-            "properties": {
-              "contract_name": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
       }
     ]
   },

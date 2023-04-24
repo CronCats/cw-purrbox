@@ -1,1 +1,1 @@
-61103328a9bb1f04a1fa55854fb3701c03e2ffea94c018480b4fa4bec3add599  boolean_contract_caller.wasm
+012373f30de804b82ecd7deecb58e022654e67394376106c4e7bb3ea13dad099  boolean_contract_caller.wasm

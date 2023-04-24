@@ -18,13 +18,13 @@ name = "make-schema"
 path = "schema-maker/schema.rs"
 
 [dependencies]
-cosmwasm-std = "1.1.8"
+cosmwasm-std = "1.1.9"
 cosmwasm-schema = "1.1.8"
-cw2 = "0.16.0"
+cw2 = "1.0.1"
 schemars = "0.8.11"
 # Cannot seem to upgrade to 1.0.0 version
 # Tracking this issue: https://github.com/CosmWasm/cw-storage-plus/issues/19
-cw-storage-plus = "0.16.0"
+cw-storage-plus = "1.0.1"
 thiserror = { version = "1.0.37" }
 mod-sdk = "0.1.0"
 
@@ -37,12 +37,12 @@ mod-sdk = "0.1.0"
 optimize-m1 = """docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/rust-optimizer-arm64:0.12.8
+  cosmwasm/rust-optimizer-arm64:0.12.13
 """
 optimize = """docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/rust-optimizer:0.12.8
+  cosmwasm/rust-optimizer:0.12.13
 """
 schema = "cargo +nightly run --bin make-schema"
 unit-test = "cargo +nightly test --lib"

@@ -1,2 +1,2 @@
 bd1b5f854ce49f6785c6aa45f935c0fc3523db2805de56e06753b311c5ef6ea6  ./target/wasm32-unknown-unknown/release/boolean_contract.wasm
-edda1af740aa84a80bad99706ec0e68b6dc868733b8863d37903cdcc2fe32b53  ./target/wasm32-unknown-unknown/release/cw_boolean_contract.wasm
+7f902be35593bdfd00fb602be816ff8387ee18c1f3f14fc135996bcdbb3fca44  ./target/wasm32-unknown-unknown/release/cw_boolean_contract.wasm

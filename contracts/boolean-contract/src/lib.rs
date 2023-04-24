@@ -1,5 +1,4 @@
 #![doc(html_logo_url = "https://docs.cron.cat/icons/icon-512x512.png")]
-
 #![allow(rustdoc::broken_intra_doc_links)]
 //! For an overview, see the [README here](readme), since Rust docs are odd.
 

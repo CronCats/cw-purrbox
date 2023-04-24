@@ -1,13 +1,16 @@
 use crate::entry_points::execute::make_croncat_toggle_task::BooleanContractExecuteMsg;
 use crate::msgs::execute_msg::ExecuteMsg::MakeCroncatToggleTask;
-use crate::tests::test_helpers::{set_up_croncat_contracts, CronCatTestEnv};
-use crate::tests::{contracts, ALICE, BOB, DENOM, VERSION};
+use crate::tests::contracts;
 use cosmwasm_std::CosmosMsg::Wasm;
 use cosmwasm_std::WasmMsg::Execute;
 use cosmwasm_std::{coins, from_binary, to_binary, Addr, BankMsg};
-use croncat_sdk_tasks::types::{
-    Action, Boundary, BoundaryHeight, Interval, Task, TaskExecutionInfo, TaskRequest,
+use croncat_integration_testing::test_helpers::{set_up_croncat_contracts, CronCatTestEnv};
+use croncat_integration_testing::{CronCatTaskExecutionInfo, ALICE, BOB, DENOM, VERSION};
+use croncat_integration_utils::{
+    CronCatAction, CronCatBoundary, CronCatBoundaryHeight, CronCatInterval, CronCatTaskRequest,
 };
+use croncat_sdk_tasks::msg::TasksExecuteMsg::CreateTask;
+use croncat_sdk_tasks::types::Task;
 use cw_multi_test::Executor;
 
 /// This test demonstrates how you might set up tests
@@ -20,10 +23,10 @@ fn task_creation_directly() {
         manager: _,
         tasks,
         agents: _,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Create a task
-    let action = Action {
+    let action = CronCatAction {
         msg: BankMsg::Send {
             to_address: Addr::unchecked(BOB).to_string(),
             amount: coins(10, DENOM),
@@ -32,9 +35,9 @@ fn task_creation_directly() {
         gas_limit: Some(100_000),
     };
 
-    let task = TaskRequest {
-        interval: Interval::Once,
-        boundary: Some(Boundary::Height(BoundaryHeight {
+    let task = CronCatTaskRequest {
+        interval: CronCatInterval::Once,
+        boundary: Some(CronCatBoundary::Height(CronCatBoundaryHeight {
             start: Some((app.block_info().height).into()),
             end: Some((app.block_info().height + 10).into()),
         })),
@@ -49,14 +52,14 @@ fn task_creation_directly() {
         .execute_contract(
             Addr::unchecked(ALICE),
             tasks.clone(),
-            &croncat_sdk_tasks::msg::TasksExecuteMsg::CreateTask {
+            &CreateTask {
                 task: Box::new(task.clone()),
             },
             &coins(300_000, DENOM),
         )
         .expect("Couldn't create first task");
 
-    let task_info: TaskExecutionInfo = from_binary(&create_task_res.data.unwrap()).unwrap();
+    let task_info: CronCatTaskExecutionInfo = from_binary(&create_task_res.data.unwrap()).unwrap();
 
     // remember, to see this you gotta:
     // cargo test -- --nocapture
@@ -74,7 +77,7 @@ fn task_creation_from_caller() {
         manager: _,
         tasks,
         agents: _,
-    } = set_up_croncat_contracts();
+    } = set_up_croncat_contracts(None);
 
     // Deploy boolean contract
     let mut code_id = app.store_code(contracts::boolean_contract());
@@ -121,7 +124,7 @@ fn task_creation_from_caller() {
         .data
         .expect("Could not get the data response");
 
-    let created_task_info: TaskExecutionInfo =
+    let created_task_info: CronCatTaskExecutionInfo =
         serde_json::from_slice(toggle_task_binary_data.0.as_slice()).unwrap();
 
     // Determine expected task hash by querying `task_hash`
@@ -135,13 +138,13 @@ fn task_creation_from_caller() {
             &croncat_sdk_tasks::msg::TasksQueryMsg::TaskHash {
                 task: Box::new(Task {
                     owner_addr: example_address.clone(),
-                    interval: Interval::Block(1),
-                    boundary: Boundary::Height(BoundaryHeight {
+                    interval: CronCatInterval::Block(1),
+                    boundary: CronCatBoundary::Height(CronCatBoundaryHeight {
                         start: None,
                         end: None,
                     }),
                     stop_on_fail: true,
-                    actions: vec![Action {
+                    actions: vec![CronCatAction {
                         msg: Wasm(Execute {
                             contract_addr: boolean_address.clone().to_string(),
                             msg: to_binary(&BooleanContractExecuteMsg::Toggle {})
