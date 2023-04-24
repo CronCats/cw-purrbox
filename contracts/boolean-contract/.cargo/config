@@ -7,3 +7,6 @@ unit-test = "run-script unit-test"
 schema = "run-script schema"
 optimize-m1 = "run-script optimize-m1"
 optimize = "run-script optimize"
+# Shortcuts
+opt = "run-script optimize"
+optm1 = "run-script optimize-m1"

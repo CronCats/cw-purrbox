@@ -4,7 +4,8 @@ use crate::entry_points::query::query;
 use crate::msgs::execute_msg::ExecuteMsg;
 use crate::msgs::query_msg::QueryMsg;
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{coins, to_binary};
+use cosmwasm_std::{coins, from_binary, Binary};
+use mod_sdk::types::QueryResponse;
 
 #[test]
 fn test_setting_getting() {
@@ -24,7 +25,17 @@ fn test_setting_getting() {
         query_res.is_ok(),
         "Querying after instantiate should be fine."
     );
-    assert_eq!(query_res.unwrap(), to_binary(&false).unwrap());
+
+    let mut query_res_binary = query_res.unwrap();
+    let mut query_response: QueryResponse = from_binary(&query_res_binary)
+        .expect("Should be able to turn query response binary into mod_sdk's QueryResponse");
+
+    let mut expected_query_response = QueryResponse {
+        result: false,
+        data: Binary::default(),
+    };
+
+    assert_eq!(query_response, expected_query_response);
 
     // Set it to true using an execute message
     let set_value_msg = ExecuteMsg::SetValue { is_true: true };
@@ -40,5 +51,14 @@ fn test_setting_getting() {
         query_res.is_ok(),
         "Querying after instantiate should be fine."
     );
-    assert_eq!(query_res.unwrap(), to_binary(&true).unwrap());
+    query_res_binary = query_res.unwrap();
+    query_response = from_binary(&query_res_binary)
+        .expect("Should be able to turn query response binary into mod_sdk's QueryResponse");
+
+    expected_query_response = QueryResponse {
+        result: true,
+        data: Binary::default(),
+    };
+
+    assert_eq!(query_response, expected_query_response);
 }
