@@ -3,7 +3,7 @@ name = "boolean-contract-caller"
 description = "Simple CosmWasm contract that calls boolean-contract, toggling a boolean set in state"
 license = "MIT OR Apache-2.0"
 authors = ["Mike Purvis @mikedotexe"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 readme = "README.md"
 keywords = ["cosmwasm", "smart-contracts", "interchain", "cosmos", "blockchain"]
@@ -17,8 +17,8 @@ name = "make-schema"
 path = "schema-maker/schema.rs"
 
 [dependencies]
-cosmwasm-std = "1.1.8"
-cosmwasm-schema = "1.1.9"
+cosmwasm-std = "1.2"
+cosmwasm-schema = "1.2"
 cw2 = "1.0.1"
 cw20 = { version = "1.0.1" }
 schemars = "0.8.11"
@@ -28,21 +28,21 @@ serde-json-wasm = "0.5.0"
 thiserror = { version = "1.0.37" }
 cw-utils = "1.0.1"
 # CronCat dependencies
-croncat-mod-generic = { version = "0.1.5", features = ["library"] }
+croncat-mod-generic = { version = "1.0.3", features = ["library"] }
 # HERE
-croncat-integration-utils = "0.1.6-rc.1"
+croncat-integration-utils = "1.0.3"
 #croncat-integration-utils = { path = "../../../cw-croncat/integration-sdk/croncat-integration-utils" }
 # HERE
-croncat-errors-macro = "0.1.6-rc.1"
+croncat-errors-macro = "1.0.3"
 #croncat-errors-macro = { path = "../../../cw-croncat/integration-sdk/croncat-errors-macro"}
 
 [dev-dependencies]
-cw-boolean-contract = "0.1.3"
+cw-boolean-contract = "0.1.4"
 cw-multi-test = "0.16.2"
 # CronCat dependencies
-croncat-sdk-tasks = "0.1.5"
+croncat-sdk-tasks = "1.0.3"
 # HERE
-croncat-integration-testing = "0.1.6-rc.1"
+croncat-integration-testing = "1.0.3"
 #croncat-integration-testing = { path = "../../../cw-croncat/integration-sdk/croncat-integration-testing" }
 
 # Make sure you've run: "cargo install cargo-run-script"
