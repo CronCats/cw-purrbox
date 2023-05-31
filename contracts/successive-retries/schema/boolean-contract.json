@@ -1,0 +1,87 @@
+{
+  "contract_name": "boolean-contract",
+  "contract_version": "0.1.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object",
+    "required": [
+      "log"
+    ],
+    "properties": {
+      "log": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "set_value"
+        ],
+        "properties": {
+          "set_value": {
+            "type": "object",
+            "required": [
+              "is_true"
+            ],
+            "properties": {
+              "is_true": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "toggle"
+        ],
+        "properties": {
+          "toggle": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "get_value"
+        ],
+        "properties": {
+          "get_value": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "migrate": null,
+  "sudo": null,
+  "responses": {
+    "get_value": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Boolean",
+      "type": "boolean"
+    }
+  }
+}
