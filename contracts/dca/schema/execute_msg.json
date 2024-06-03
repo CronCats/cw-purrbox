@@ -49,6 +49,26 @@
     {
       "type": "object",
       "required": [
+        "refill_basket"
+      ],
+      "properties": {
+        "refill_basket": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "remove_basket"
       ],
       "properties": {
@@ -137,8 +157,6 @@
       "required": [
         "balance",
         "input_token",
-        "last_interval",
-        "min_interval",
         "swap_address",
         "swap_amount"
       ],
@@ -150,14 +168,41 @@
           "$ref": "#/definitions/TokenSelect"
         },
         "last_interval": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "format": "uint64",
           "minimum": 0.0
         },
+        "last_swap": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "maxItems": 2,
+          "minItems": 2
+        },
         "min_interval": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "format": "uint64",
           "minimum": 0.0
+        },
+        "min_swap_rate": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "recipient": {
           "anyOf": [
